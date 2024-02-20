@@ -4,7 +4,6 @@ const fs = require('fs');
 const url = process.argv[2];
 const region = process.argv[3];
 
-
 (async () => {
     const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
@@ -50,19 +49,21 @@ const region = process.argv[3];
         rating = await page.evaluate(el => el.querySelector("div.ActionsRow_stars__EKt42 > div > span").textContent, item)
         reviewCount = await page.evaluate(el => el.querySelector("div.ActionsRow_reviews__AfSj_ > button").textContent, item)
     }
+
     for (const item of priceHandles) {
         price = await page.evaluate(el => el.querySelector('div.ProductPage_desktopBuy__cyRrC > div > div').textContent, item)
-        if(!price.match(/Временно отсутствует/)){
+        if(!price.match(/(Временно отсутствует)|(Недоступен для заказа)/)){
             price = await page.evaluate(el => el.querySelector("div.PriceInfo_root__GX9Xp > span").textContent, item)
             priceOld = await page.evaluate(el => el.querySelector("span.Price_price__QzA8L.Price_size_XS__ESEhJ.Price_role_old__r1uT1").textContent, item)
         }
-
     }
 
     let productInfo = `price=${price}\npriceOld=${priceOld}\nrating=${rating}\nreviewCount=${reviewCount}\n`
     console.log(productInfo)
+
     fs.writeFileSync('product.txt', productInfo);
     await browser.close();
+
 })();
 
 
